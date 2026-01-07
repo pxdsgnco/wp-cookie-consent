@@ -25,6 +25,12 @@ const SettingsPanel = ( { settings, updateSettings, pages } ) => {
 		{ value: 'modal', label: __( 'Centered Modal', 'consent-raven' ) },
 	];
 
+	const retentionOptions = [
+		{ value: '3', label: __( '3 Months', 'consent-raven' ) },
+		{ value: '6', label: __( '6 Months', 'consent-raven' ) },
+		{ value: '12', label: __( '12 Months', 'consent-raven' ) },
+	];
+
 	return (
 		<div className="cr-settings-panel">
 			<div className="cr-admin-panel__header">
@@ -76,6 +82,18 @@ const SettingsPanel = ( { settings, updateSettings, pages } ) => {
 					help={ __( 'Increment this to re-prompt users for consent when your cookie policy changes.', 'consent-raven' ) }
 					value={ settings.consent_version || '1.0' }
 					onChange={ ( consent_version ) => updateSettings( { consent_version } ) }
+				/>
+			</div>
+
+			<div className="cr-form-group">
+				<SelectControl
+					label={ __( 'Log Retention Period', 'consent-raven' ) }
+					help={ __( 'How long to keep consent acceptance logs before automatic deletion.', 'consent-raven' ) }
+					value={ String( settings.log_retention_months || 12 ) }
+					options={ retentionOptions }
+					onChange={ ( value ) =>
+						updateSettings( { log_retention_months: parseInt( value, 10 ) } )
+					}
 				/>
 			</div>
 		</div>

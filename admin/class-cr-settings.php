@@ -55,10 +55,11 @@ class CR_Settings {
 	 */
 	public static function get_defaults() {
 		return array(
-			'enabled'         => true,
-			'position'        => 'bottom-right',
-			'policy_page_id'  => 0,
-			'consent_version' => '1.0',
+			'enabled'              => true,
+			'position'             => 'bottom-right',
+			'policy_page_id'       => 0,
+			'consent_version'      => '1.0',
+			'log_retention_months' => 12,
 			'appearance'      => array(
 				'theme'            => 'dark',
 				'background_color' => '#1a1a1a',

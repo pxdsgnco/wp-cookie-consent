@@ -27,10 +27,11 @@ class CR_Consent {
 	 */
 	public static function get_settings() {
 		$defaults = array(
-			'enabled'         => true,
-			'position'        => 'bottom-right',
-			'policy_page_id'  => 0,
-			'consent_version' => '1.0',
+			'enabled'              => true,
+			'position'             => 'bottom-right',
+			'policy_page_id'       => 0,
+			'consent_version'      => '1.0',
+			'log_retention_months' => 12,
 			'appearance'      => array(
 				'theme'            => 'dark',
 				'background_color' => '#1a1a1a',
@@ -118,6 +119,13 @@ class CR_Consent {
 		$sanitized['consent_version'] = isset( $settings['consent_version'] )
 			? sanitize_text_field( $settings['consent_version'] )
 			: '1.0';
+
+		// Log retention months (must be 3, 6, or 12).
+		$valid_retention               = array( 3, 6, 12 );
+		$sanitized['log_retention_months'] = isset( $settings['log_retention_months'] )
+			&& in_array( (int) $settings['log_retention_months'], $valid_retention, true )
+			? (int) $settings['log_retention_months']
+			: 12;
 
 		// Appearance settings.
 		$sanitized['appearance'] = array(
