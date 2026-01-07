@@ -23,6 +23,11 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 ?>
+<!-- Skip link for keyboard users -->
+<a href="#cr-banner-end" class="cr-skip-link sr-only sr-only-focusable">
+	<?php esc_html_e( 'Skip cookie banner', 'consent-raven' ); ?>
+</a>
+
 <!-- Consent Raven Cookie Banner -->
 <div id="consent-raven-banner"
 	class="cr-banner cr-banner--<?php echo esc_attr( $position ); ?>"
@@ -34,7 +39,7 @@ if ( ! defined( 'WPINC' ) ) {
 	style="display: none;">
 
 	<?php if ( 'modal' === $position ) : ?>
-	<div class="cr-overlay"></div>
+	<div class="cr-overlay" aria-hidden="true"></div>
 	<?php endif; ?>
 
 	<div class="cr-dialog">
@@ -48,7 +53,12 @@ if ( ! defined( 'WPINC' ) ) {
 			</p>
 
 			<div class="cr-dialog__actions">
-				<button type="button" class="cr-button cr-button--customize" data-action="customize">
+				<button type="button"
+					class="cr-button cr-button--customize"
+					data-action="customize"
+					aria-controls="consent-raven-preferences"
+					aria-expanded="false"
+					aria-haspopup="dialog">
 					<?php echo esc_html( $content['customize_button'] ); ?>
 				</button>
 
@@ -64,6 +74,9 @@ if ( ! defined( 'WPINC' ) ) {
 		</div>
 	</div>
 </div>
+
+<!-- End of cookie banner region -->
+<span id="cr-banner-end" tabindex="-1"></span>
 
 <!-- Consent Raven Preferences Modal -->
 <div id="consent-raven-preferences"
@@ -91,22 +104,25 @@ if ( ! defined( 'WPINC' ) ) {
 				<div class="cr-category" data-category="<?php echo esc_attr( $category['slug'] ); ?>">
 					<div class="cr-category__header">
 						<div class="cr-category__info">
-							<h3 class="cr-category__name"><?php echo esc_html( $category['name'] ); ?></h3>
-							<p class="cr-category__description"><?php echo esc_html( $category['description'] ); ?></p>
+							<h3 class="cr-category__name" id="cr-category-name-<?php echo esc_attr( $category['slug'] ); ?>"><?php echo esc_html( $category['name'] ); ?></h3>
+							<p class="cr-category__description" id="cr-category-desc-<?php echo esc_attr( $category['slug'] ); ?>"><?php echo esc_html( $category['description'] ); ?></p>
 						</div>
 						<div class="cr-category__toggle">
 							<?php if ( $category['essential'] ) : ?>
-							<span class="cr-toggle cr-toggle--always-on">
+							<span class="cr-toggle cr-toggle--always-on" role="status">
 								<?php esc_html_e( 'Always on', 'consent-raven' ); ?>
 							</span>
 							<?php else : ?>
-							<label class="cr-toggle">
+							<label class="cr-toggle" id="cr-toggle-label-<?php echo esc_attr( $category['slug'] ); ?>">
 								<input type="checkbox"
 									class="cr-toggle__input"
 									name="consent_category_<?php echo esc_attr( $category['slug'] ); ?>"
-									data-category="<?php echo esc_attr( $category['slug'] ); ?>">
-								<span class="cr-toggle__slider"></span>
-								<span class="sr-only"><?php echo esc_html( $category['name'] ); ?></span>
+									data-category="<?php echo esc_attr( $category['slug'] ); ?>"
+									role="switch"
+									aria-checked="false"
+									aria-labelledby="cr-category-name-<?php echo esc_attr( $category['slug'] ); ?>">
+								<span class="cr-toggle__slider" aria-hidden="true"></span>
+								<span class="sr-only"><?php printf( esc_html__( 'Enable %s cookies', 'consent-raven' ), esc_html( $category['name'] ) ); ?></span>
 							</label>
 							<?php endif; ?>
 						</div>
@@ -129,6 +145,8 @@ if ( ! defined( 'WPINC' ) ) {
 	class="cr-settings-button"
 	type="button"
 	aria-label="<?php esc_attr_e( 'Cookie Settings', 'consent-raven' ); ?>"
+	aria-haspopup="dialog"
+	aria-controls="consent-raven-preferences"
 	style="display: none;">
 	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
 		<path d="M12 2C11.5 2 11 2.19 10.59 2.59L9.17 4H7C5.9 4 5 4.9 5 6V8.17L3.59 9.59C2.8 10.37 2.8 11.63 3.59 12.41L5 13.83V16C5 17.1 5.9 18 7 18H9.17L10.59 19.41C11.37 20.2 12.63 20.2 13.41 19.41L14.83 18H17C18.1 18 19 17.1 19 16V13.83L20.41 12.41C21.2 11.63 21.2 10.37 20.41 9.59L19 8.17V6C19 4.9 18.1 4 17 4H14.83L13.41 2.59C13 2.19 12.5 2 12 2M12 8C14.21 8 16 9.79 16 12S14.21 16 12 16 8 14.21 8 12 9.79 8 12 8Z"/>

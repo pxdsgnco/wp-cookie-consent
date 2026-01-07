@@ -98,6 +98,13 @@
 						self.hidePreferences();
 					}
 				});
+
+				// Toggle switch aria-checked updates
+				this.elements.preferences.addEventListener('change', function(e) {
+					if (e.target.classList.contains('cr-toggle__input')) {
+						e.target.setAttribute('aria-checked', e.target.checked ? 'true' : 'false');
+					}
+				});
 			}
 
 			// Settings button
@@ -325,8 +332,10 @@
 			consentRaven.categories.forEach(function(cat) {
 				if (!cat.essential) {
 					var checkbox = document.querySelector('.cr-toggle__input[data-category="' + cat.slug + '"]');
-					if (checkbox && consent && consent.categories) {
-						checkbox.checked = consent.categories[cat.slug] || false;
+					if (checkbox) {
+						var isChecked = consent && consent.categories ? (consent.categories[cat.slug] || false) : false;
+						checkbox.checked = isChecked;
+						checkbox.setAttribute('aria-checked', isChecked ? 'true' : 'false');
 					}
 				}
 			});
@@ -368,6 +377,12 @@
 				this.elements.preferences.setAttribute('data-animating', 'in');
 				this.trapFocus(this.elements.preferences);
 
+				// Update aria-expanded on customize button
+				var customizeBtn = document.querySelector('[data-action="customize"]');
+				if (customizeBtn) {
+					customizeBtn.setAttribute('aria-expanded', 'true');
+				}
+
 				// Focus first interactive element
 				var firstInput = this.elements.preferences.querySelector('.cr-toggle__input, .cr-button');
 				if (firstInput) {
@@ -387,6 +402,12 @@
 			if (this.elements.preferences) {
 				this.elements.preferences.style.display = 'none';
 				this.releaseFocus();
+
+				// Update aria-expanded on customize button
+				var customizeBtn = document.querySelector('[data-action="customize"]');
+				if (customizeBtn) {
+					customizeBtn.setAttribute('aria-expanded', 'false');
+				}
 
 				// Return focus to settings button if visible
 				if (this.elements.settingsButton && this.elements.settingsButton.style.display !== 'none') {

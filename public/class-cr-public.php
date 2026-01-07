@@ -146,4 +146,22 @@ class CR_Public {
 
 		wp_add_inline_style( $this->plugin_name, $css );
 	}
+
+	/**
+	 * Add defer attribute to frontend script for performance.
+	 *
+	 * @since  1.0.0
+	 * @param  string $tag    The script tag.
+	 * @param  string $handle The script handle.
+	 * @param  string $src    The script source URL.
+	 * @return string Modified script tag.
+	 */
+	public function add_defer_attribute( $tag, $handle, $src ) {
+		if ( $this->plugin_name !== $handle ) {
+			return $tag;
+		}
+
+		// Add defer attribute for non-blocking loading.
+		return str_replace( ' src', ' defer src', $tag );
+	}
 }

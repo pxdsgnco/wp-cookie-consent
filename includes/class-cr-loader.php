@@ -140,6 +140,9 @@ class CR_Loader {
 		$this->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
+		// Add defer attribute to frontend script for better performance.
+		$this->add_filter( 'script_loader_tag', $plugin_public, 'add_defer_attribute', 10, 3 );
+
 		// Banner output.
 		$this->add_action( 'wp_footer', $plugin_banner, 'render_banner' );
 

@@ -115,6 +115,16 @@ class CR_Script_Blocker {
 
 		$scripts = $this->get_registered_scripts();
 
+		// Early exit if no scripts registered.
+		if ( empty( $scripts ) ) {
+			return $buffer;
+		}
+
+		// Early exit if buffer contains no script tags.
+		if ( stripos( $buffer, '<script' ) === false ) {
+			return $buffer;
+		}
+
 		// Find inline scripts that should be blocked.
 		foreach ( $scripts as $script ) {
 			if ( 'inline' !== $script['method'] || empty( $script['pattern'] ) ) {
