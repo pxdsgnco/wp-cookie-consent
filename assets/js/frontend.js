@@ -88,7 +88,9 @@
 			// Preferences modal
 			if (this.elements.preferences) {
 				this.elements.preferences.addEventListener('click', function(e) {
-					var action = e.target.getAttribute('data-action');
+					// Use closest() to handle clicks on child elements (e.g., span inside button)
+					var actionElement = e.target.closest('[data-action]');
+					var action = actionElement ? actionElement.getAttribute('data-action') : null;
 					if (action) {
 						self.handleAction(action);
 					}
