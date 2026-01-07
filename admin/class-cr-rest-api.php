@@ -173,6 +173,35 @@ class CR_Rest_API {
 				),
 			)
 		);
+
+		// Create policy page endpoint.
+		register_rest_route(
+			$this->namespace,
+			'/create-policy-page',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_policy_page' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+					'args'                => array(
+						'title'              => array(
+							'type'              => 'string',
+							'required'          => true,
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'content'            => array(
+							'type'     => 'string',
+							'required' => true,
+						),
+						'set_as_policy_page' => array(
+							'type'              => 'boolean',
+							'default'           => true,
+							'sanitize_callback' => 'rest_sanitize_boolean',
+						),
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -446,6 +475,54 @@ class CR_Rest_API {
 			array(
 				'success' => true,
 				'message' => __( 'Settings reset to defaults.', 'consent-raven' ),
+			)
+		);
+	}
+
+	/**
+	 * Create a cookie policy page.
+	 *
+	 * @since  1.0.0
+	 * @param  WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error Response or error.
+	 */
+	public function create_policy_page( $request ) {
+		$title              = $request->get_param( 'title' );
+		$content            = $request->get_param( 'content' );
+		$set_as_policy_page = $request->get_param( 'set_as_policy_page' );
+
+		// Create the page.
+		$page_data = array(
+			'post_title'   => $title,
+			'post_content' => $content,
+			'post_status'  => 'draft',
+			'post_type'    => 'page',
+		);
+
+		$page_id = wp_insert_post( $page_data, true );
+
+		if ( is_wp_error( $page_id ) ) {
+			return new WP_Error(
+				'page_creation_failed',
+				$page_id->get_error_message(),
+				array( 'status' => 500 )
+			);
+		}
+
+		// Set as policy page in settings if requested.
+		if ( $set_as_policy_page ) {
+			$settings                  = CR_Consent::get_settings();
+			$settings['policy_page_id'] = $page_id;
+			CR_Consent::update_settings( $settings );
+		}
+
+		return rest_ensure_response(
+			array(
+				'success'  => true,
+				'message'  => __( 'Cookie policy page created successfully.', 'consent-raven' ),
+				'page_id'  => $page_id,
+				'edit_url' => admin_url( 'post.php?post=' . $page_id . '&action=edit' ),
+				'view_url' => get_permalink( $page_id ),
 			)
 		);
 	}

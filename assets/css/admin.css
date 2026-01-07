@@ -993,3 +993,117 @@
 	display: inline-block;
 	min-width: 80px;
 }
+
+/* ===========================
+   Policy Page Generator
+   =========================== */
+
+.cr-policy-generator {
+	background: #f0f7fc;
+	border: 1px solid #c3c4c7;
+	border-radius: 8px;
+	padding: 20px;
+}
+
+.cr-policy-generator__content {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.cr-policy-generator__description {
+	margin: 0;
+	font-size: 13px;
+	color: #50575e;
+	flex: 1;
+}
+
+/* ===========================
+   Policy Wizard Modal
+   =========================== */
+
+.cr-policy-wizard .components-modal__content {
+	max-width: 600px;
+}
+
+.cr-policy-wizard__intro {
+	margin: 0 0 24px 0;
+	font-size: 14px;
+	color: #50575e;
+	line-height: 1.6;
+}
+
+.cr-policy-wizard__step {
+	min-height: 200px;
+}
+
+.cr-policy-wizard__sections {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 8px;
+	margin-bottom: 24px;
+}
+
+.cr-policy-wizard__sections .components-checkbox-control {
+	margin-bottom: 0;
+}
+
+.cr-policy-wizard__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 24px;
+	padding-top: 16px;
+	border-top: 1px solid #ddd;
+}
+
+.cr-policy-wizard__success {
+	text-align: center;
+	padding: 24px 0;
+}
+
+.cr-policy-wizard__success-icon {
+	width: 64px;
+	height: 64px;
+	margin: 0 auto 16px;
+	background: #00a32a;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 32px;
+	color: #fff;
+}
+
+.cr-policy-wizard__success h3 {
+	margin: 0 0 8px 0;
+	font-size: 18px;
+	font-weight: 600;
+	color: #1e1e1e;
+}
+
+.cr-policy-wizard__success p {
+	margin: 0 0 24px 0;
+	font-size: 14px;
+	color: #50575e;
+}
+
+.cr-policy-wizard__success-actions {
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+	margin-bottom: 24px;
+}
+
+/* Responsive */
+@media screen and (max-width: 600px) {
+	.cr-policy-generator__content {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.cr-policy-wizard__sections {
+		grid-template-columns: 1fr;
+	}
+}

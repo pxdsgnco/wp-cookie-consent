@@ -9,6 +9,7 @@ import { useState, useRef } from '@wordpress/element';
 import { Button, Notice, Modal, Spinner } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import PolicyWizard from './PolicyWizard';
 
 /**
  * Tools Panel component - Import/Export functionality
@@ -28,6 +29,7 @@ const ToolsPanel = ( { settings, categories, cookies, scripts, onImport } ) => {
 	const [ notice, setNotice ] = useState( null );
 	const [ confirmModal, setConfirmModal ] = useState( null );
 	const [ importData, setImportData ] = useState( null );
+	const [ isWizardOpen, setIsWizardOpen ] = useState( false );
 	const fileInputRef = useRef( null );
 
 	/**
@@ -317,6 +319,29 @@ const ToolsPanel = ( { settings, categories, cookies, scripts, onImport } ) => {
 				</Notice>
 			) }
 
+			{/* Policy Page Generator Section */}
+			<div className="cr-form-section">
+				<h3 className="cr-form-section__title">
+					{ __( 'Policy Page Generator', 'consent-raven' ) }
+				</h3>
+				<div className="cr-policy-generator">
+					<div className="cr-policy-generator__content">
+						<p className="cr-policy-generator__description">
+							{ __(
+								'Create a cookie policy page with pre-written content and a table of your configured cookies. The page will be created as a draft so you can review it before publishing.',
+								'consent-raven'
+							) }
+						</p>
+						<Button
+							variant="primary"
+							onClick={ () => setIsWizardOpen( true ) }
+						>
+							{ __( 'Generate Policy Page', 'consent-raven' ) }
+						</Button>
+					</div>
+				</div>
+			</div>
+
 			<div className="cr-import-export">
 				{/* Export Section */}
 				<div className="cr-import-export__section">
@@ -490,6 +515,18 @@ const ToolsPanel = ( { settings, categories, cookies, scripts, onImport } ) => {
 					</div>
 				</Modal>
 			) }
+
+			{/* Policy Wizard Modal */}
+			<PolicyWizard
+				isOpen={ isWizardOpen }
+				onClose={ () => setIsWizardOpen( false ) }
+				onSuccess={ ( response ) => {
+					setNotice( {
+						status: 'success',
+						message: __( 'Cookie policy page created successfully!', 'consent-raven' ),
+					} );
+				} }
+			/>
 		</div>
 	);
 };

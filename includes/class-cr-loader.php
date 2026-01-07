@@ -134,6 +134,7 @@ class CR_Loader {
 		$plugin_public         = new CR_Public( $this->get_plugin_name(), $this->get_version() );
 		$plugin_banner         = new CR_Banner( $this->get_plugin_name(), $this->get_version() );
 		$plugin_script_blocker = new CR_Script_Blocker( $this->get_plugin_name(), $this->get_version() );
+		$plugin_shortcodes     = new CR_Shortcodes( $this->get_plugin_name(), $this->get_version() );
 
 		// Public scripts and styles.
 		$this->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
@@ -151,6 +152,13 @@ class CR_Loader {
 
 		// Early consent check script in wp_head.
 		$this->add_action( 'wp_head', $plugin_script_blocker, 'output_early_script', 1 );
+
+		// Shortcodes.
+		$this->add_action( 'init', $plugin_shortcodes, 'register_shortcodes' );
+
+		// Gutenberg block.
+		$this->add_action( 'init', $plugin_shortcodes, 'register_block' );
+		$this->add_action( 'enqueue_block_editor_assets', $plugin_shortcodes, 'enqueue_block_editor_assets' );
 	}
 
 	/**
