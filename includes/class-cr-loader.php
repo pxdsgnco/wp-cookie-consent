@@ -142,8 +142,15 @@ class CR_Loader {
 		// Banner output.
 		$this->add_action( 'wp_footer', $plugin_banner, 'render_banner' );
 
-		// Script blocking.
+		// Script blocking via script_loader_tag filter.
 		$this->add_filter( 'script_loader_tag', $plugin_script_blocker, 'maybe_block_script', 10, 3 );
+
+		// Output buffering for inline script blocking.
+		$this->add_action( 'template_redirect', $plugin_script_blocker, 'start_buffer' );
+		$this->add_action( 'shutdown', $plugin_script_blocker, 'end_buffer', 0 );
+
+		// Early consent check script in wp_head.
+		$this->add_action( 'wp_head', $plugin_script_blocker, 'output_early_script', 1 );
 	}
 
 	/**

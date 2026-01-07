@@ -45,6 +45,15 @@ class CR_Script_Blocker {
 	private $registered_scripts;
 
 	/**
+	 * Whether output buffering is active.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    bool $buffer_active Whether buffering is active.
+	 */
+	private $buffer_active = false;
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since 1.0.0
@@ -55,6 +64,98 @@ class CR_Script_Blocker {
 		$this->plugin_name        = $plugin_name;
 		$this->version            = $version;
 		$this->registered_scripts = null;
+	}
+
+	/**
+	 * Start output buffering to capture and modify inline scripts.
+	 *
+	 * @since 1.0.0
+	 */
+	public function start_buffer() {
+		if ( ! CR_Consent::should_show_banner() ) {
+			return;
+		}
+
+		if ( $this->buffer_active ) {
+			return;
+		}
+
+		$this->buffer_active = true;
+		ob_start( array( $this, 'process_buffer' ) );
+	}
+
+	/**
+	 * End output buffering.
+	 *
+	 * @since 1.0.0
+	 */
+	public function end_buffer() {
+		if ( ! $this->buffer_active ) {
+			return;
+		}
+
+		if ( ob_get_level() > 0 ) {
+			ob_end_flush();
+		}
+
+		$this->buffer_active = false;
+	}
+
+	/**
+	 * Process the output buffer to block inline scripts.
+	 *
+	 * @since  1.0.0
+	 * @param  string $buffer The output buffer content.
+	 * @return string Modified buffer.
+	 */
+	public function process_buffer( $buffer ) {
+		if ( empty( $buffer ) ) {
+			return $buffer;
+		}
+
+		$scripts = $this->get_registered_scripts();
+
+		// Find inline scripts that should be blocked.
+		foreach ( $scripts as $script ) {
+			if ( 'inline' !== $script['method'] || empty( $script['pattern'] ) ) {
+				continue;
+			}
+
+			// Match script tags containing the pattern.
+			$pattern = '/<script([^>]*)>([^<]*' . preg_quote( $script['pattern'], '/' ) . '[^<]*)<\/script>/is';
+
+			$buffer = preg_replace_callback(
+				$pattern,
+				function ( $matches ) use ( $script ) {
+					$attributes = $matches[1];
+					$content    = $matches[2];
+
+					// Skip if already blocked.
+					if ( strpos( $attributes, 'data-cookie-category' ) !== false ) {
+						return $matches[0];
+					}
+
+					// Skip if type is already text/plain.
+					if ( preg_match( '/type\s*=\s*["\']text\/plain["\']/', $attributes ) ) {
+						return $matches[0];
+					}
+
+					// Remove existing type attribute.
+					$attributes = preg_replace( '/\s*type\s*=\s*["\'][^"\']*["\']/i', '', $attributes );
+
+					// Add blocking attributes.
+					return sprintf(
+						'<script type="text/plain" data-cookie-category="%s"%s>%s</script>',
+						esc_attr( $script['category_id'] ),
+						$attributes,
+						$content
+					);
+				},
+				$buffer
+			);
+		}
+
+		return $buffer;
 	}
 
 	/**
@@ -283,5 +384,66 @@ class CR_Script_Blocker {
 				};
 			})();
 		";
+	}
+
+	/**
+	 * Output early consent check script in wp_head.
+	 *
+	 * This script checks for existing consent and makes it available
+	 * before other scripts run, enabling early script activation.
+	 *
+	 * @since 1.0.0
+	 */
+	public function output_early_script() {
+		if ( ! CR_Consent::should_show_banner() ) {
+			return;
+		}
+
+		$settings = CR_Consent::get_settings();
+		?>
+		<script id="consent-raven-early">
+		(function() {
+			'use strict';
+
+			// Parse consent cookie
+			function getConsentCookie() {
+				var name = 'consent_raven=';
+				var ca = document.cookie.split(';');
+				for (var i = 0; i < ca.length; i++) {
+					var c = ca[i].trim();
+					if (c.indexOf(name) === 0) {
+						try {
+							return JSON.parse(decodeURIComponent(c.substring(name.length)));
+						} catch (e) {
+							return null;
+						}
+					}
+				}
+				return null;
+			}
+
+			// Get consent and store in global for later use
+			var consent = getConsentCookie();
+			var version = <?php echo wp_json_encode( $settings['consent_version'] ); ?>;
+
+			// Validate consent version
+			if (consent && consent.version !== version) {
+				consent = null;
+			}
+
+			// Store consent for later access
+			window.consentRavenConsent = consent;
+
+			// If consent exists, prepare enabled categories
+			if (consent && consent.categories) {
+				window.consentRavenEnabledCategories = Object.keys(consent.categories).filter(function(key) {
+					return consent.categories[key] === true;
+				});
+			} else {
+				window.consentRavenEnabledCategories = [];
+			}
+		})();
+		</script>
+		<?php
 	}
 }
