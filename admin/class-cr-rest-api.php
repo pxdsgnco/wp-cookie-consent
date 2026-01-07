@@ -202,6 +202,118 @@ class CR_Rest_API {
 				),
 			)
 		);
+
+		// Log consent endpoint (public - no auth required).
+		register_rest_route(
+			$this->namespace,
+			'/log-consent',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'log_consent' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'action'          => array(
+							'type'              => 'string',
+							'required'          => true,
+							'enum'              => array( 'accept_all', 'reject_all', 'custom' ),
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'categories'      => array(
+							'type'     => 'object',
+							'required' => true,
+						),
+						'consent_version' => array(
+							'type'              => 'string',
+							'required'          => true,
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
+				),
+			)
+		);
+
+		// Get consent logs endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/consent-logs',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_consent_logs' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+					'args'                => array(
+						'page'      => array(
+							'type'              => 'integer',
+							'default'           => 1,
+							'sanitize_callback' => 'absint',
+						),
+						'per_page'  => array(
+							'type'              => 'integer',
+							'default'           => 20,
+							'sanitize_callback' => 'absint',
+						),
+						'action'    => array(
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'date_from' => array(
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'date_to'   => array(
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'clear_consent_logs' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+				),
+			)
+		);
+
+		// Export consent logs endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/consent-logs/export',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'export_consent_logs' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+					'args'                => array(
+						'action'    => array(
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'date_from' => array(
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'date_to'   => array(
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
+				),
+			)
+		);
+
+		// Consent logs stats endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/consent-logs/stats',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_consent_stats' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -249,22 +361,15 @@ class CR_Rest_API {
 		}
 
 		// Update settings.
-		$result = CR_Consent::update_settings( $settings );
+		// Note: update_option returns false when value is unchanged, which is not an error.
+		CR_Consent::update_settings( $settings );
 
-		if ( $result ) {
-			return rest_ensure_response(
-				array(
-					'success'  => true,
-					'message'  => __( 'Settings updated successfully.', 'consent-raven' ),
-					'settings' => CR_Consent::get_settings(),
-				)
-			);
-		}
-
-		return new WP_Error(
-			'update_failed',
-			__( 'Failed to update settings.', 'consent-raven' ),
-			array( 'status' => 500 )
+		return rest_ensure_response(
+			array(
+				'success'  => true,
+				'message'  => __( 'Settings updated successfully.', 'consent-raven' ),
+				'settings' => CR_Consent::get_settings(),
+			)
 		);
 	}
 
@@ -296,22 +401,15 @@ class CR_Rest_API {
 			);
 		}
 
-		$result = CR_Consent::update_categories( $categories );
+		// Note: update_option returns false when value is unchanged, which is not an error.
+		CR_Consent::update_categories( $categories );
 
-		if ( $result ) {
-			return rest_ensure_response(
-				array(
-					'success'    => true,
-					'message'    => __( 'Categories updated successfully.', 'consent-raven' ),
-					'categories' => CR_Consent::get_categories(),
-				)
-			);
-		}
-
-		return new WP_Error(
-			'update_failed',
-			__( 'Failed to update categories.', 'consent-raven' ),
-			array( 'status' => 500 )
+		return rest_ensure_response(
+			array(
+				'success'    => true,
+				'message'    => __( 'Categories updated successfully.', 'consent-raven' ),
+				'categories' => CR_Consent::get_categories(),
+			)
 		);
 	}
 
@@ -343,22 +441,15 @@ class CR_Rest_API {
 			);
 		}
 
-		$result = CR_Consent::update_cookies( $cookies );
+		// Note: update_option returns false when value is unchanged, which is not an error.
+		CR_Consent::update_cookies( $cookies );
 
-		if ( $result ) {
-			return rest_ensure_response(
-				array(
-					'success' => true,
-					'message' => __( 'Cookies updated successfully.', 'consent-raven' ),
-					'cookies' => CR_Consent::get_cookies(),
-				)
-			);
-		}
-
-		return new WP_Error(
-			'update_failed',
-			__( 'Failed to update cookies.', 'consent-raven' ),
-			array( 'status' => 500 )
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => __( 'Cookies updated successfully.', 'consent-raven' ),
+				'cookies' => CR_Consent::get_cookies(),
+			)
 		);
 	}
 
@@ -390,22 +481,15 @@ class CR_Rest_API {
 			);
 		}
 
-		$result = CR_Consent::update_scripts( $scripts );
+		// Note: update_option returns false when value is unchanged, which is not an error.
+		CR_Consent::update_scripts( $scripts );
 
-		if ( $result ) {
-			return rest_ensure_response(
-				array(
-					'success' => true,
-					'message' => __( 'Scripts updated successfully.', 'consent-raven' ),
-					'scripts' => CR_Consent::get_scripts(),
-				)
-			);
-		}
-
-		return new WP_Error(
-			'update_failed',
-			__( 'Failed to update scripts.', 'consent-raven' ),
-			array( 'status' => 500 )
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => __( 'Scripts updated successfully.', 'consent-raven' ),
+				'scripts' => CR_Consent::get_scripts(),
+			)
 		);
 	}
 
@@ -558,6 +642,196 @@ class CR_Rest_API {
 			'content'         => array(
 				'type' => 'object',
 			),
+		);
+	}
+
+	/**
+	 * Log consent from frontend (public endpoint).
+	 *
+	 * @since  1.2.0
+	 * @param  WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error Response or error.
+	 */
+	public function log_consent( $request ) {
+		// Get visitor IP address.
+		$ip = '';
+		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+			$ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
+		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+			$ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
+		} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+		}
+
+		// Rate limiting - 1 request per 5 seconds per IP.
+		$ip_hash        = CR_Consent_Log::hash_ip( $ip );
+		$rate_limit_key = 'cr_consent_rate_' . substr( $ip_hash, 0, 32 );
+
+		if ( get_transient( $rate_limit_key ) ) {
+			return new WP_Error(
+				'rate_limited',
+				__( 'Too many requests. Please wait.', 'consent-raven' ),
+				array( 'status' => 429 )
+			);
+		}
+
+		// Set rate limit transient.
+		set_transient( $rate_limit_key, true, 5 );
+
+		// Get user agent.
+		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] )
+			? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) )
+			: '';
+
+		// Log the consent.
+		$result = CR_Consent_Log::log_consent(
+			array(
+				'ip'              => $ip,
+				'user_agent'      => $user_agent,
+				'action'          => $request->get_param( 'action' ),
+				'categories'      => $request->get_param( 'categories' ),
+				'consent_version' => $request->get_param( 'consent_version' ),
+			)
+		);
+
+		if ( $result ) {
+			return rest_ensure_response(
+				array(
+					'success' => true,
+					'message' => __( 'Consent logged successfully.', 'consent-raven' ),
+				)
+			);
+		}
+
+		return new WP_Error(
+			'log_failed',
+			__( 'Failed to log consent.', 'consent-raven' ),
+			array( 'status' => 500 )
+		);
+	}
+
+	/**
+	 * Get consent logs with pagination.
+	 *
+	 * @since  1.2.0
+	 * @param  WP_REST_Request $request The request object.
+	 * @return WP_REST_Response Response with logs.
+	 */
+	public function get_consent_logs( $request ) {
+		$args = array(
+			'page'      => $request->get_param( 'page' ),
+			'per_page'  => $request->get_param( 'per_page' ),
+			'action'    => $request->get_param( 'action' ),
+			'date_from' => $request->get_param( 'date_from' ),
+			'date_to'   => $request->get_param( 'date_to' ),
+		);
+
+		$logs  = CR_Consent_Log::get_logs( $args );
+		$total = CR_Consent_Log::get_logs_count( $args );
+
+		$per_page    = absint( $args['per_page'] ) ?: 20;
+		$total_pages = ceil( $total / $per_page );
+
+		return rest_ensure_response(
+			array(
+				'success'     => true,
+				'logs'        => $logs,
+				'total'       => $total,
+				'total_pages' => $total_pages,
+				'page'        => absint( $args['page'] ) ?: 1,
+			)
+		);
+	}
+
+	/**
+	 * Export consent logs as CSV data.
+	 *
+	 * @since  1.2.0
+	 * @param  WP_REST_Request $request The request object.
+	 * @return WP_REST_Response Response with CSV data.
+	 */
+	public function export_consent_logs( $request ) {
+		$args = array(
+			'action'    => $request->get_param( 'action' ),
+			'date_from' => $request->get_param( 'date_from' ),
+			'date_to'   => $request->get_param( 'date_to' ),
+		);
+
+		$logs = CR_Consent_Log::get_logs_for_export( $args );
+
+		// Build CSV data array.
+		$csv_data = array();
+
+		// Header row.
+		$csv_data[] = array(
+			__( 'ID', 'consent-raven' ),
+			__( 'IP Hash (Anonymized)', 'consent-raven' ),
+			__( 'Consent Action', 'consent-raven' ),
+			__( 'Categories', 'consent-raven' ),
+			__( 'Consent Version', 'consent-raven' ),
+			__( 'Date/Time', 'consent-raven' ),
+		);
+
+		// Data rows.
+		foreach ( $logs as $log ) {
+			$csv_data[] = array(
+				$log->id,
+				$log->ip_hash,
+				$log->consent_action,
+				$log->categories,
+				$log->consent_version,
+				$log->created_at,
+			);
+		}
+
+		return rest_ensure_response(
+			array(
+				'success'  => true,
+				'data'     => $csv_data,
+				'filename' => 'consent-logs-' . gmdate( 'Y-m-d' ) . '.csv',
+			)
+		);
+	}
+
+	/**
+	 * Get consent statistics.
+	 *
+	 * @since  1.2.0
+	 * @return WP_REST_Response Response with stats.
+	 */
+	public function get_consent_stats() {
+		$stats = CR_Consent_Log::get_stats();
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'stats'   => $stats,
+			)
+		);
+	}
+
+	/**
+	 * Clear all consent logs.
+	 *
+	 * @since  1.2.0
+	 * @return WP_REST_Response|WP_Error Response or error.
+	 */
+	public function clear_consent_logs() {
+		$result = CR_Consent_Log::clear_all_logs();
+
+		if ( false !== $result ) {
+			return rest_ensure_response(
+				array(
+					'success' => true,
+					'message' => __( 'All consent logs cleared.', 'consent-raven' ),
+				)
+			);
+		}
+
+		return new WP_Error(
+			'clear_failed',
+			__( 'Failed to clear consent logs.', 'consent-raven' ),
+			array( 'status' => 500 )
 		);
 	}
 }
