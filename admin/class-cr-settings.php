@@ -200,17 +200,26 @@ class CR_Settings {
 	}
 
 	/**
-	 * Import settings from JSON.
+	 * Import settings from JSON or array.
 	 *
 	 * @since  1.0.0
-	 * @param  string $json JSON encoded settings.
+	 * @param  string|array $data JSON encoded settings or array.
 	 * @return bool|WP_Error True on success or error.
 	 */
-	public static function import_settings( $json ) {
-		$import = json_decode( $json, true );
+	public static function import_settings( $data ) {
+		// Handle both JSON string and array input.
+		if ( is_string( $data ) ) {
+			$import = json_decode( $data, true );
 
-		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			return new WP_Error( 'invalid_json', __( 'Invalid JSON format.', 'consent-raven' ) );
+			if ( json_last_error() !== JSON_ERROR_NONE ) {
+				return new WP_Error( 'invalid_json', __( 'Invalid JSON format.', 'consent-raven' ) );
+			}
+		} else {
+			$import = $data;
+		}
+
+		if ( ! is_array( $import ) ) {
+			return new WP_Error( 'invalid_data', __( 'Invalid import data format.', 'consent-raven' ) );
 		}
 
 		if ( isset( $import['settings'] ) ) {
@@ -228,6 +237,142 @@ class CR_Settings {
 		if ( isset( $import['scripts'] ) ) {
 			CR_Consent::update_scripts( $import['scripts'] );
 		}
+
+		return true;
+	}
+
+	/**
+	 * Reset all settings to defaults.
+	 *
+	 * @since  1.1.0
+	 * @return bool|WP_Error True on success or error.
+	 */
+	public static function reset_to_defaults() {
+		// Reset settings to defaults.
+		$default_settings = self::get_defaults();
+		CR_Consent::update_settings( $default_settings );
+
+		// Reset categories to defaults.
+		$default_categories = array(
+			array(
+				'id'          => 'essential',
+				'slug'        => 'essential',
+				'name'        => __( 'Essential', 'consent-raven' ),
+				'description' => __( 'These cookies are necessary for the website to function and cannot be switched off.', 'consent-raven' ),
+				'essential'   => true,
+			),
+			array(
+				'id'          => 'analytics',
+				'slug'        => 'analytics',
+				'name'        => __( 'Analytics', 'consent-raven' ),
+				'description' => __( 'These cookies help us understand how visitors interact with the website.', 'consent-raven' ),
+				'essential'   => false,
+			),
+			array(
+				'id'          => 'marketing',
+				'slug'        => 'marketing',
+				'name'        => __( 'Marketing', 'consent-raven' ),
+				'description' => __( 'These cookies are used to deliver personalized ads and track ad campaigns.', 'consent-raven' ),
+				'essential'   => false,
+			),
+		);
+		CR_Consent::update_categories( $default_categories );
+
+		// Reset cookies to defaults.
+		$default_cookies = array(
+			array(
+				'name'        => 'wordpress_logged_in_*',
+				'category_id' => 'essential',
+				'provider'    => 'WordPress',
+				'purpose'     => 'Indicates when a user is logged in',
+				'expiration'  => 'Session',
+				'host'        => '',
+			),
+			array(
+				'name'        => 'wp-settings-*',
+				'category_id' => 'essential',
+				'provider'    => 'WordPress',
+				'purpose'     => 'Stores user preferences',
+				'expiration'  => '1 year',
+				'host'        => '',
+			),
+			array(
+				'name'        => 'consent_raven',
+				'category_id' => 'essential',
+				'provider'    => 'Consent Raven',
+				'purpose'     => 'Stores cookie consent preferences',
+				'expiration'  => '1 year',
+				'host'        => '',
+			),
+			array(
+				'name'        => '_ga',
+				'category_id' => 'analytics',
+				'provider'    => 'Google Analytics',
+				'purpose'     => 'Distinguishes unique users',
+				'expiration'  => '2 years',
+				'host'        => '.google.com',
+			),
+			array(
+				'name'        => '_gid',
+				'category_id' => 'analytics',
+				'provider'    => 'Google Analytics',
+				'purpose'     => 'Distinguishes unique users',
+				'expiration'  => '24 hours',
+				'host'        => '.google.com',
+			),
+			array(
+				'name'        => '_gat',
+				'category_id' => 'analytics',
+				'provider'    => 'Google Analytics',
+				'purpose'     => 'Throttles request rate',
+				'expiration'  => '1 minute',
+				'host'        => '.google.com',
+			),
+			array(
+				'name'        => '_ga_*',
+				'category_id' => 'analytics',
+				'provider'    => 'Google Analytics 4',
+				'purpose'     => 'Maintains session state',
+				'expiration'  => '2 years',
+				'host'        => '.google.com',
+			),
+			array(
+				'name'        => '_fbp',
+				'category_id' => 'marketing',
+				'provider'    => 'Facebook',
+				'purpose'     => 'Tracks visits across websites',
+				'expiration'  => '3 months',
+				'host'        => '.facebook.com',
+			),
+			array(
+				'name'        => 'fr',
+				'category_id' => 'marketing',
+				'provider'    => 'Facebook',
+				'purpose'     => 'Enables ad delivery',
+				'expiration'  => '3 months',
+				'host'        => '.facebook.com',
+			),
+			array(
+				'name'        => 'IDE',
+				'category_id' => 'marketing',
+				'provider'    => 'Google DoubleClick',
+				'purpose'     => 'Ad targeting and retargeting',
+				'expiration'  => '1 year',
+				'host'        => '.doubleclick.net',
+			),
+			array(
+				'name'        => 'test_cookie',
+				'category_id' => 'marketing',
+				'provider'    => 'Google DoubleClick',
+				'purpose'     => 'Checks if cookies are enabled',
+				'expiration'  => '15 minutes',
+				'host'        => '.doubleclick.net',
+			),
+		);
+		CR_Consent::update_cookies( $default_cookies );
+
+		// Reset scripts to empty.
+		CR_Consent::update_scripts( array() );
 
 		return true;
 	}

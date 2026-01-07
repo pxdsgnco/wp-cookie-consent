@@ -16,6 +16,7 @@ import ContentPanel from './components/ContentPanel';
 import CategoriesPanel from './components/CategoriesPanel';
 import CookiesPanel from './components/CookiesPanel';
 import ScriptsPanel from './components/ScriptsPanel';
+import ToolsPanel from './components/ToolsPanel';
 
 /**
  * Main App component
@@ -66,6 +67,11 @@ const App = ( { initialTab = 'settings' } ) => {
 			name: 'scripts',
 			title: __( 'Scripts', 'consent-raven' ),
 			className: 'cr-tab-scripts',
+		},
+		{
+			name: 'tools',
+			title: __( 'Tools', 'consent-raven' ),
+			className: 'cr-tab-tools',
 		},
 	];
 
@@ -177,6 +183,9 @@ const App = ( { initialTab = 'settings' } ) => {
 					<AppearancePanel
 						appearance={ settings.appearance || {} }
 						updateAppearance={ updateAppearance }
+						settings={ settings }
+						content={ settings.content || {} }
+						categories={ categories }
 					/>
 				);
 			case 'content':
@@ -216,6 +225,29 @@ const App = ( { initialTab = 'settings' } ) => {
 							setHasChanges( true );
 						} }
 						categories={ categories }
+					/>
+				);
+			case 'tools':
+				return (
+					<ToolsPanel
+						settings={ settings }
+						categories={ categories }
+						cookies={ cookies }
+						scripts={ scripts }
+						onImport={ ( data ) => {
+							if ( data.settings ) {
+								setSettings( data.settings );
+							}
+							if ( data.categories ) {
+								setCategories( data.categories );
+							}
+							if ( data.cookies ) {
+								setCookies( data.cookies );
+							}
+							if ( data.scripts ) {
+								setScripts( data.scripts );
+							}
+						} }
 					/>
 				);
 			default:

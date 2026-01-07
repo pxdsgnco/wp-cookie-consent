@@ -160,6 +160,19 @@ class CR_Rest_API {
 				),
 			)
 		);
+
+		// Reset endpoint.
+		register_rest_route(
+			$this->namespace,
+			'/reset',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'reset_settings' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -392,9 +405,9 @@ class CR_Rest_API {
 	 * @return WP_REST_Response|WP_Error Response or error.
 	 */
 	public function import_settings( $request ) {
-		$json = $request->get_param( 'data' );
+		$data = $request->get_json_params();
 
-		if ( empty( $json ) ) {
+		if ( empty( $data ) ) {
 			return new WP_Error(
 				'missing_data',
 				__( 'No import data provided.', 'consent-raven' ),
@@ -402,7 +415,7 @@ class CR_Rest_API {
 			);
 		}
 
-		$result = CR_Settings::import_settings( $json );
+		$result = CR_Settings::import_settings( $data );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -412,6 +425,27 @@ class CR_Rest_API {
 			array(
 				'success' => true,
 				'message' => __( 'Settings imported successfully.', 'consent-raven' ),
+			)
+		);
+	}
+
+	/**
+	 * Reset settings to defaults.
+	 *
+	 * @since  1.1.0
+	 * @return WP_REST_Response|WP_Error Response or error.
+	 */
+	public function reset_settings() {
+		$result = CR_Settings::reset_to_defaults();
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => __( 'Settings reset to defaults.', 'consent-raven' ),
 			)
 		);
 	}

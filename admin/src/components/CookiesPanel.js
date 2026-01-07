@@ -5,12 +5,13 @@
  * @since 1.0.0
  */
 
-import { useState } from '@wordpress/element';
+import { useState, useMemo } from '@wordpress/element';
 import {
 	Button,
 	TextControl,
 	SelectControl,
 	Modal,
+	CheckboxControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -27,6 +28,9 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 	const [ editingCookie, setEditingCookie ] = useState( null );
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ filterCategory, setFilterCategory ] = useState( '' );
+	const [ searchTerm, setSearchTerm ] = useState( '' );
+	const [ selectedCookies, setSelectedCookies ] = useState( [] );
+	const [ validationErrors, setValidationErrors ] = useState( {} );
 
 	const categoryOptions = [
 		{ value: '', label: __( 'All Categories', 'consent-raven' ) },
@@ -42,6 +46,34 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 	} ) );
 
 	/**
+	 * Validate cookie fields
+	 *
+	 * @param {Object} cookie Cookie to validate.
+	 * @return {Object} Validation errors.
+	 */
+	const validateCookie = ( cookie ) => {
+		const errors = {};
+
+		if ( ! cookie.name || cookie.name.trim() === '' ) {
+			errors.name = __( 'Cookie name is required.', 'consent-raven' );
+		}
+
+		if ( ! cookie.category_id ) {
+			errors.category_id = __( 'Please select a category.', 'consent-raven' );
+		}
+
+		// Check for duplicate cookie names.
+		const existingIndex = cookies.findIndex(
+			( c, i ) => c.name === cookie.name && i !== cookie.index
+		);
+		if ( existingIndex !== -1 && cookie.isNew ) {
+			errors.name = __( 'A cookie with this name already exists.', 'consent-raven' );
+		}
+
+		return errors;
+	};
+
+	/**
 	 * Add new cookie
 	 */
 	const addCookie = () => {
@@ -54,6 +86,7 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 			host: '',
 			isNew: true,
 		} );
+		setValidationErrors( {} );
 		setIsModalOpen( true );
 	};
 
@@ -65,6 +98,7 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 	 */
 	const editCookie = ( cookie, index ) => {
 		setEditingCookie( { ...cookie, index, isNew: false } );
+		setValidationErrors( {} );
 		setIsModalOpen( true );
 	};
 
@@ -72,7 +106,10 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 	 * Save cookie
 	 */
 	const saveCookie = () => {
-		if ( ! editingCookie.name || ! editingCookie.category_id ) {
+		const errors = validateCookie( editingCookie );
+		setValidationErrors( errors );
+
+		if ( Object.keys( errors ).length > 0 ) {
 			return;
 		}
 
@@ -82,7 +119,7 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 			updatedCookies = [
 				...cookies,
 				{
-					name: editingCookie.name,
+					name: editingCookie.name.trim(),
 					category_id: editingCookie.category_id,
 					provider: editingCookie.provider,
 					purpose: editingCookie.purpose,
@@ -94,7 +131,7 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 			updatedCookies = cookies.map( ( c, i ) =>
 				i === editingCookie.index
 					? {
-							name: editingCookie.name,
+							name: editingCookie.name.trim(),
 							category_id: editingCookie.category_id,
 							provider: editingCookie.provider,
 							purpose: editingCookie.purpose,
@@ -108,6 +145,7 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 		setCookies( updatedCookies );
 		setIsModalOpen( false );
 		setEditingCookie( null );
+		setValidationErrors( {} );
 	};
 
 	/**
@@ -121,6 +159,76 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 		}
 
 		setCookies( cookies.filter( ( _, i ) => i !== index ) );
+		setSelectedCookies( selectedCookies.filter( ( i ) => i !== index ) );
+	};
+
+	/**
+	 * Delete selected cookies
+	 */
+	const deleteSelectedCookies = () => {
+		if ( selectedCookies.length === 0 ) {
+			return;
+		}
+
+		if ( ! window.confirm(
+			/* translators: %d: number of cookies */
+			sprintf( __( 'Are you sure you want to delete %d cookie(s)?', 'consent-raven' ), selectedCookies.length )
+		) ) {
+			return;
+		}
+
+		setCookies( cookies.filter( ( _, i ) => ! selectedCookies.includes( i ) ) );
+		setSelectedCookies( [] );
+	};
+
+	/**
+	 * Change category for selected cookies
+	 *
+	 * @param {string} categoryId New category ID.
+	 */
+	const changeSelectedCategory = ( categoryId ) => {
+		if ( selectedCookies.length === 0 || ! categoryId ) {
+			return;
+		}
+
+		const updatedCookies = cookies.map( ( cookie, index ) =>
+			selectedCookies.includes( index )
+				? { ...cookie, category_id: categoryId }
+				: cookie
+		);
+
+		setCookies( updatedCookies );
+		setSelectedCookies( [] );
+	};
+
+	/**
+	 * Toggle cookie selection
+	 *
+	 * @param {number} index Cookie index.
+	 */
+	const toggleCookieSelection = ( index ) => {
+		setSelectedCookies( ( prev ) =>
+			prev.includes( index )
+				? prev.filter( ( i ) => i !== index )
+				: [ ...prev, index ]
+		);
+	};
+
+	/**
+	 * Toggle all cookies selection
+	 */
+	const toggleAllSelection = () => {
+		if ( selectedCookies.length === filteredCookies.length ) {
+			setSelectedCookies( [] );
+		} else {
+			const allIndices = filteredCookies.map( ( _, i ) => {
+				// Get original index.
+				return cookies.findIndex(
+					( c ) => c.name === filteredCookies[ i ].name && c.category_id === filteredCookies[ i ].category_id
+				);
+			} );
+			setSelectedCookies( allIndices );
+		}
 	};
 
 	/**
@@ -134,10 +242,18 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 		return category?.name || id;
 	};
 
-	// Filter cookies by category
-	const filteredCookies = filterCategory
-		? cookies.filter( ( c ) => c.category_id === filterCategory )
-		: cookies;
+	// Filter cookies by category and search term.
+	const filteredCookies = useMemo( () => {
+		return cookies.filter( ( cookie ) => {
+			const matchesCategory = ! filterCategory || cookie.category_id === filterCategory;
+			const matchesSearch = ! searchTerm ||
+				cookie.name.toLowerCase().includes( searchTerm.toLowerCase() ) ||
+				cookie.provider?.toLowerCase().includes( searchTerm.toLowerCase() ) ||
+				cookie.purpose?.toLowerCase().includes( searchTerm.toLowerCase() );
+
+			return matchesCategory && matchesSearch;
+		} );
+	}, [ cookies, filterCategory, searchTerm ] );
 
 	return (
 		<div className="cr-cookies-panel">
@@ -150,27 +266,77 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 				</p>
 			</div>
 
-			<div className="cr-form-group" style={ { display: 'flex', gap: '16px', alignItems: 'flex-end' } }>
-				<Button variant="primary" onClick={ addCookie }>
-					{ __( 'Add Cookie', 'consent-raven' ) }
-				</Button>
+			{/* Filter Bar */}
+			<div className="cr-filter-bar">
+				<div className="cr-search-box">
+					<TextControl
+						label={ __( 'Search', 'consent-raven' ) }
+						hideLabelFromVision
+						placeholder={ __( 'Search cookies...', 'consent-raven' ) }
+						value={ searchTerm }
+						onChange={ setSearchTerm }
+					/>
+				</div>
 				<SelectControl
 					label={ __( 'Filter by Category', 'consent-raven' ) }
+					hideLabelFromVision
 					value={ filterCategory }
 					options={ categoryOptions }
 					onChange={ setFilterCategory }
+					__nextHasNoMarginBottom
 				/>
+				<div className="cr-filter-actions">
+					<Button variant="primary" onClick={ addCookie }>
+						{ __( 'Add Cookie', 'consent-raven' ) }
+					</Button>
+				</div>
 			</div>
+
+			{/* Bulk Actions Bar */}
+			{ selectedCookies.length > 0 && (
+				<div className="cr-bulk-bar">
+					<span className="cr-bulk-bar__count">
+						{ sprintf(
+							/* translators: %d: number of selected items */
+							__( '%d selected', 'consent-raven' ),
+							selectedCookies.length
+						) }
+					</span>
+					<div className="cr-bulk-bar__actions">
+						<SelectControl
+							label={ __( 'Move to Category', 'consent-raven' ) }
+							hideLabelFromVision
+							value=""
+							options={ [
+								{ value: '', label: __( 'Move to...', 'consent-raven' ) },
+								...categorySelectOptions,
+							] }
+							onChange={ changeSelectedCategory }
+							__nextHasNoMarginBottom
+						/>
+						<Button
+							variant="secondary"
+							isDestructive
+							onClick={ deleteSelectedCookies }
+						>
+							{ __( 'Delete Selected', 'consent-raven' ) }
+						</Button>
+					</div>
+				</div>
+			) }
 
 			{ filteredCookies.length === 0 ? (
 				<div className="cr-empty-state">
-					<div className="cr-empty-state__icon">🍪</div>
+					<div className="cr-empty-state__icon">{ String.fromCodePoint( 0x1F36A ) }</div>
 					<h3 className="cr-empty-state__title">
-						{ __( 'No Cookies', 'consent-raven' ) }
+						{ searchTerm || filterCategory
+							? __( 'No Cookies Found', 'consent-raven' )
+							: __( 'No Cookies', 'consent-raven' )
+						}
 					</h3>
 					<p className="cr-empty-state__description">
-						{ filterCategory
-							? __( 'No cookies in this category.', 'consent-raven' )
+						{ searchTerm || filterCategory
+							? __( 'Try adjusting your search or filter.', 'consent-raven' )
 							: __( 'Add cookie definitions to display in your cookie policy.', 'consent-raven' )
 						}
 					</p>
@@ -179,6 +345,13 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 				<table className="cr-data-table">
 					<thead>
 						<tr>
+							<th className="cr-checkbox-cell">
+								<CheckboxControl
+									checked={ selectedCookies.length === filteredCookies.length && filteredCookies.length > 0 }
+									onChange={ toggleAllSelection }
+									aria-label={ __( 'Select all', 'consent-raven' ) }
+								/>
+							</th>
 							<th>{ __( 'Cookie Name', 'consent-raven' ) }</th>
 							<th>{ __( 'Provider', 'consent-raven' ) }</th>
 							<th>{ __( 'Category', 'consent-raven' ) }</th>
@@ -187,8 +360,8 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 						</tr>
 					</thead>
 					<tbody>
-						{ filteredCookies.map( ( cookie, index ) => {
-							// Find original index in unfiltered array
+						{ filteredCookies.map( ( cookie, filteredIndex ) => {
+							// Find original index in unfiltered array.
 							const originalIndex = cookies.findIndex(
 								( c ) =>
 									c.name === cookie.name &&
@@ -196,15 +369,30 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 							);
 
 							return (
-								<tr key={ `${ cookie.name }-${ index }` }>
+								<tr key={ `${ cookie.name }-${ filteredIndex }` }>
+									<td className="cr-checkbox-cell">
+										<CheckboxControl
+											checked={ selectedCookies.includes( originalIndex ) }
+											onChange={ () => toggleCookieSelection( originalIndex ) }
+											aria-label={ sprintf(
+												/* translators: %s: cookie name */
+												__( 'Select %s', 'consent-raven' ),
+												cookie.name
+											) }
+										/>
+									</td>
 									<td>
 										<code>{ cookie.name }</code>
-										<br />
-										<small>{ cookie.purpose }</small>
+										{ cookie.purpose && (
+											<>
+												<br />
+												<small>{ cookie.purpose }</small>
+											</>
+										) }
 									</td>
-									<td>{ cookie.provider }</td>
+									<td>{ cookie.provider || '—' }</td>
 									<td>{ getCategoryName( cookie.category_id ) }</td>
-									<td>{ cookie.expiration }</td>
+									<td>{ cookie.expiration || '—' }</td>
 									<td className="cr-data-table__actions">
 										<Button
 											variant="secondary"
@@ -229,6 +417,18 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 				</table>
 			) }
 
+			{/* Cookie count */}
+			{ cookies.length > 0 && (
+				<p className="cr-helper-text" style={ { marginTop: '16px' } }>
+					{ sprintf(
+						/* translators: 1: filtered count, 2: total count */
+						__( 'Showing %1$d of %2$d cookies', 'consent-raven' ),
+						filteredCookies.length,
+						cookies.length
+					) }
+				</p>
+			) }
+
 			{ isModalOpen && editingCookie && (
 				<Modal
 					title={
@@ -239,17 +439,22 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 					onRequestClose={ () => {
 						setIsModalOpen( false );
 						setEditingCookie( null );
+						setValidationErrors( {} );
 					} }
 				>
 					<div className="cr-form-group">
 						<TextControl
 							label={ __( 'Cookie Name', 'consent-raven' ) }
-							help={ __( 'Use * as wildcard (e.g., _ga_*)', 'consent-raven' ) }
+							help={ validationErrors.name ? undefined : __( 'Use * as wildcard (e.g., _ga_*)', 'consent-raven' ) }
 							value={ editingCookie.name }
 							onChange={ ( name ) =>
 								setEditingCookie( { ...editingCookie, name } )
 							}
+							className={ validationErrors.name ? 'has-error' : '' }
 						/>
+						{ validationErrors.name && (
+							<span className="cr-field-error">{ validationErrors.name }</span>
+						) }
 					</div>
 
 					<div className="cr-form-group">
@@ -261,11 +466,15 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 								setEditingCookie( { ...editingCookie, category_id } )
 							}
 						/>
+						{ validationErrors.category_id && (
+							<span className="cr-field-error">{ validationErrors.category_id }</span>
+						) }
 					</div>
 
 					<div className="cr-form-group">
 						<TextControl
 							label={ __( 'Provider', 'consent-raven' ) }
+							help={ __( 'The service or company that sets this cookie.', 'consent-raven' ) }
 							value={ editingCookie.provider }
 							onChange={ ( provider ) =>
 								setEditingCookie( { ...editingCookie, provider } )
@@ -276,6 +485,7 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 					<div className="cr-form-group">
 						<TextControl
 							label={ __( 'Purpose', 'consent-raven' ) }
+							help={ __( 'A brief description of what this cookie is used for.', 'consent-raven' ) }
 							value={ editingCookie.purpose }
 							onChange={ ( purpose ) =>
 								setEditingCookie( { ...editingCookie, purpose } )
@@ -297,6 +507,7 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 					<div className="cr-form-group">
 						<TextControl
 							label={ __( 'Host / Domain', 'consent-raven' ) }
+							help={ __( 'The domain where the cookie is set.', 'consent-raven' ) }
 							value={ editingCookie.host }
 							onChange={ ( host ) =>
 								setEditingCookie( { ...editingCookie, host } )
@@ -310,6 +521,7 @@ const CookiesPanel = ( { cookies, setCookies, categories } ) => {
 							onClick={ () => {
 								setIsModalOpen( false );
 								setEditingCookie( null );
+								setValidationErrors( {} );
 							} }
 						>
 							{ __( 'Cancel', 'consent-raven' ) }
