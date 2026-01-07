@@ -1,0 +1,111 @@
+# Copyright (C) 2024 Consent Raven
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Consent Raven 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/pxdsgnco/wp-cookie-consent/issues\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-01-01T00:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.9.0\n"
+"X-Domain: consent-raven\n"
+
+#: consent-raven.php
+msgid "Consent Raven"
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Cookie settings"
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "We use cookies to deliver and improve our services, analyze site usage, and if you agree, to customize or personalize your experience and market our services to you. You can read our Cookie Policy here."
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Accept All Cookies"
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Reject All Cookies"
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Customize Cookie Settings"
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Save Preferences"
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "here"
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Essential"
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Necessary cookies for the website to function properly. These cannot be disabled."
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Analytics"
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Cookies that help us understand how visitors interact with our website."
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Marketing"
+msgstr ""
+
+#: includes/class-cr-activator.php
+msgid "Cookies used to deliver personalized advertisements and track campaign performance."
+msgstr ""
+
+#: public/class-cr-banner.php
+msgid "Always on"
+msgstr ""
+
+#: public/class-cr-banner.php
+msgid "Close"
+msgstr ""
+
+#: admin/class-cr-admin.php
+msgid "Settings"
+msgstr ""
+
+#: admin/class-cr-admin.php
+msgid "Categories"
+msgstr ""
+
+#: admin/class-cr-admin.php
+msgid "Cookies"
+msgstr ""
+
+#: admin/class-cr-admin.php
+msgid "Scripts"
+msgstr ""
+
+#: admin/class-cr-admin.php
+msgid "Save Changes"
+msgstr ""
+
+#: admin/class-cr-admin.php
+msgid "Saving..."
+msgstr ""
+
+#: admin/class-cr-admin.php
+msgid "Settings saved!"
+msgstr ""
+
+#: admin/class-cr-admin.php
+msgid "Error saving settings"
+msgstr ""

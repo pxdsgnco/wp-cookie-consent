@@ -1,0 +1,34 @@
+{
+	"name": "consent-raven/consent-raven",
+	"description": "A lightweight cookie consent plugin with customizable banners, granular category control, and GDPR/NDPR compliance features.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "Consent Raven",
+			"homepage": "https://github.com/pxdsgnco"
+		}
+	],
+	"require": {
+		"php": ">=7.2"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^8.0 || ^9.0",
+		"wp-coding-standards/wpcs": "^3.0",
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+		"phpcompatibility/phpcompatibility-wp": "^2.1",
+		"yoast/phpunit-polyfills": "^2.0"
+	},
+	"scripts": {
+		"phpcs": "phpcs",
+		"phpcbf": "phpcbf",
+		"test": "phpunit",
+		"lint": "@phpcs",
+		"lint:fix": "@phpcbf"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	}
+}

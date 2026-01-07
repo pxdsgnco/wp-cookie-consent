@@ -1,0 +1,39 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "consent-raven/policy-table",
+	"version": "1.0.0",
+	"title": "Cookie Policy Table",
+	"category": "widgets",
+	"icon": "shield",
+	"description": "Display a table of cookies configured in Consent Raven.",
+	"keywords": [ "cookie", "policy", "gdpr", "consent", "privacy" ],
+	"textdomain": "consent-raven",
+	"attributes": {
+		"showCategory": {
+			"type": "boolean",
+			"default": true
+		},
+		"showProvider": {
+			"type": "boolean",
+			"default": true
+		},
+		"showExpiration": {
+			"type": "boolean",
+			"default": true
+		},
+		"showHost": {
+			"type": "boolean",
+			"default": false
+		},
+		"filterCategory": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ]
+	},
+	"editorScript": "file:../../assets/js/block-policy-table.js"
+}
