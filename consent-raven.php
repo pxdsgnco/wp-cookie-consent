@@ -84,6 +84,7 @@ require CONSENT_RAVEN_PLUGIN_DIR . 'admin/class-cr-rest-api.php';
 require CONSENT_RAVEN_PLUGIN_DIR . 'public/class-cr-public.php';
 require CONSENT_RAVEN_PLUGIN_DIR . 'public/class-cr-banner.php';
 require CONSENT_RAVEN_PLUGIN_DIR . 'public/class-cr-script-blocker.php';
+require CONSENT_RAVEN_PLUGIN_DIR . 'public/class-cr-shortcodes.php';
 
 /**
  * Begins execution of the plugin.

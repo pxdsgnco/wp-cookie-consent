@@ -1,0 +1,53 @@
+/**
+ * Consent Raven - Block Editor Styles
+ *
+ * @package Consent_Raven
+ * @since 1.0.0
+ */
+
+/* Policy Table Block Preview */
+.cr-policy-table-block {
+	border: 1px dashed #c3c4c7;
+	padding: 16px;
+	border-radius: 4px;
+	background-color: #f8f9fa;
+}
+
+.cr-policy-table-block__preview {
+	overflow-x: auto;
+}
+
+.cr-policy-table-block .cr-policy-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.cr-policy-table-block .cr-policy-table th,
+.cr-policy-table-block .cr-policy-table td {
+	padding: 8px 12px;
+	text-align: left;
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.cr-policy-table-block .cr-policy-table thead th {
+	background-color: #fff;
+	font-weight: 600;
+	color: #1e1e1e;
+	white-space: nowrap;
+}
+
+.cr-policy-table-block .cr-policy-table tbody td {
+	color: #6b7280;
+	font-style: italic;
+}
+
+/* Block Editor Panel Styles */
+.cr-policy-table-block .components-toggle-control {
+	margin-bottom: 8px;
+}
+
+.cr-policy-table-block .components-select-control {
+	margin-bottom: 0;
+}
