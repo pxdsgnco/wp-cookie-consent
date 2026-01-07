@@ -87,6 +87,13 @@ class CR_Public {
 			true
 		);
 
+		// Add script activation inline script before the main script.
+		wp_add_inline_script(
+			$this->plugin_name,
+			CR_Script_Blocker::get_activation_script(),
+			'before'
+		);
+
 		// Pass data to JavaScript.
 		$settings   = CR_Consent::get_settings();
 		$categories = CR_Consent::get_categories();
@@ -105,10 +112,13 @@ class CR_Public {
 				'cookieName'    => 'consent_raven',
 				'cookieExpiry'  => 365, // Days.
 				'i18n'          => array(
-					'showDetails' => __( 'Show details', 'consent-raven' ),
-					'hideDetails' => __( 'Hide details', 'consent-raven' ),
-					'on'          => __( 'On', 'consent-raven' ),
-					'off'         => __( 'Off', 'consent-raven' ),
+					'showDetails'      => __( 'Show details', 'consent-raven' ),
+					'hideDetails'      => __( 'Hide details', 'consent-raven' ),
+					'on'               => __( 'On', 'consent-raven' ),
+					'off'              => __( 'Off', 'consent-raven' ),
+					'acceptedAll'      => __( 'All cookies have been accepted. Your preferences have been saved.', 'consent-raven' ),
+					'rejectedAll'      => __( 'Non-essential cookies have been rejected. Your preferences have been saved.', 'consent-raven' ),
+					'preferencesSaved' => __( 'Your cookie preferences have been saved.', 'consent-raven' ),
 				),
 			)
 		);

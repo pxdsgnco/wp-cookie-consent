@@ -36,7 +36,8 @@
 		elements: {
 			banner: null,
 			preferences: null,
-			settingsButton: null
+			settingsButton: null,
+			announcer: null
 		},
 
 		/**
@@ -65,6 +66,7 @@
 			this.elements.banner = document.getElementById('consent-raven-banner');
 			this.elements.preferences = document.getElementById('consent-raven-preferences');
 			this.elements.settingsButton = document.getElementById('consent-raven-settings-button');
+			this.elements.announcer = document.getElementById('consent-raven-announcer');
 		},
 
 		/**
@@ -184,6 +186,9 @@
 			this.showSettingsButton();
 			this.applyConsent();
 
+			// Announce to screen readers
+			this.announce(this.getAnnouncement('accept'));
+
 			this.dispatchEvent('consent_raven_accept_all', { categories: categories });
 		},
 
@@ -196,6 +201,9 @@
 			this.hideBanner();
 			this.showSettingsButton();
 			this.applyConsent();
+
+			// Announce to screen readers
+			this.announce(this.getAnnouncement('reject'));
 
 			this.dispatchEvent('consent_raven_reject_all', { categories: categories });
 		},
@@ -210,6 +218,9 @@
 			this.hideBanner();
 			this.showSettingsButton();
 			this.applyConsent();
+
+			// Announce to screen readers
+			this.announce(this.getAnnouncement('save'));
 
 			this.dispatchEvent('consent_raven_save_preferences', { categories: categories });
 		},
@@ -537,6 +548,36 @@
 			this.deleteCookie(this.config.cookieName);
 			this.state.consent = null;
 			this.checkConsent();
+		},
+
+		/**
+		 * Announce a message to screen readers
+		 */
+		announce: function(message) {
+			if (!this.elements.announcer) {
+				return;
+			}
+
+			// Clear previous announcement
+			this.elements.announcer.textContent = '';
+
+			// Set new announcement after a brief delay to ensure it's announced
+			setTimeout(function() {
+				this.elements.announcer.textContent = message;
+			}.bind(this), 100);
+		},
+
+		/**
+		 * Get announcement message for consent action
+		 */
+		getAnnouncement: function(action) {
+			var messages = {
+				accept: consentRaven.i18n.acceptedAll || 'All cookies have been accepted. Your preferences have been saved.',
+				reject: consentRaven.i18n.rejectedAll || 'Non-essential cookies have been rejected. Your preferences have been saved.',
+				save: consentRaven.i18n.preferencesSaved || 'Your cookie preferences have been saved.'
+			};
+
+			return messages[action] || messages.save;
 		}
 	};
 
