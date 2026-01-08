@@ -189,6 +189,16 @@ class CR_Admin {
 			'consent-raven-scripts',
 			array( $this, 'render_admin_page' )
 		);
+
+		// Consent Logs submenu.
+		add_submenu_page(
+			'consent-raven',
+			__( 'Consent Logs', 'consent-raven' ),
+			__( 'Consent Logs', 'consent-raven' ),
+			'manage_options',
+			'consent-raven-logs',
+			array( $this, 'render_admin_page' )
+		);
 	}
 
 	/**
@@ -234,6 +244,7 @@ class CR_Admin {
 			'consent-raven_page_consent-raven-categories',
 			'consent-raven_page_consent-raven-cookies',
 			'consent-raven_page_consent-raven-scripts',
+			'consent-raven_page_consent-raven-logs',
 		);
 
 		return in_array( $hook_suffix, $plugin_pages, true );

@@ -17,6 +17,7 @@ import CategoriesPanel from './components/CategoriesPanel';
 import CookiesPanel from './components/CookiesPanel';
 import ScriptsPanel from './components/ScriptsPanel';
 import ToolsPanel from './components/ToolsPanel';
+import ConsentLogsPanel from './components/ConsentLogsPanel';
 
 /**
  * Main App component
@@ -72,6 +73,11 @@ const App = ( { initialTab = 'settings' } ) => {
 			name: 'tools',
 			title: __( 'Tools', 'consent-raven' ),
 			className: 'cr-tab-tools',
+		},
+		{
+			name: 'logs',
+			title: __( 'Consent Logs', 'consent-raven' ),
+			className: 'cr-tab-logs',
 		},
 	];
 
@@ -250,6 +256,8 @@ const App = ( { initialTab = 'settings' } ) => {
 						} }
 					/>
 				);
+			case 'logs':
+				return <ConsentLogsPanel />;
 			default:
 				return null;
 		}

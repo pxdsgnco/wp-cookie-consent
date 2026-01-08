@@ -33,6 +33,7 @@ class CR_Deactivator {
 
 		// Clear any scheduled hooks.
 		wp_clear_scheduled_hook( 'consent_raven_cleanup' );
+		wp_clear_scheduled_hook( 'consent_raven_log_cleanup' );
 
 		// Flush rewrite rules.
 		flush_rewrite_rules();

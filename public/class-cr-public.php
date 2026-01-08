@@ -102,16 +102,18 @@ class CR_Public {
 			$this->plugin_name,
 			'consentRaven',
 			array(
-				'settings'      => array(
+				'settings'       => array(
 					'position'       => $settings['position'],
 					'consentVersion' => $settings['consent_version'],
 					'policyPageUrl'  => CR_Consent::get_policy_page_url(),
 				),
-				'categories'    => $categories,
-				'content'       => $settings['content'],
-				'cookieName'    => 'consent_raven',
-				'cookieExpiry'  => 365, // Days.
-				'i18n'          => array(
+				'categories'     => $categories,
+				'content'        => $settings['content'],
+				'cookieName'     => 'consent_raven',
+				'cookieExpiry'   => 365, // Days.
+				'restUrl'        => rest_url( 'consent-raven/v1/' ),
+				'loggingEnabled' => apply_filters( 'consent_raven_logging_enabled', true ),
+				'i18n'           => array(
 					'showDetails'      => __( 'Show details', 'consent-raven' ),
 					'hideDetails'      => __( 'Hide details', 'consent-raven' ),
 					'on'               => __( 'On', 'consent-raven' ),

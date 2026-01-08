@@ -31,6 +31,14 @@ class CR_Activator {
 		self::set_default_categories();
 		self::set_default_cookies();
 
+		// Create consent logs table.
+		CR_Consent_Log::create_table();
+
+		// Schedule daily cleanup cron job for consent logs.
+		if ( ! wp_next_scheduled( 'consent_raven_log_cleanup' ) ) {
+			wp_schedule_event( time(), 'daily', 'consent_raven_log_cleanup' );
+		}
+
 		// Store the plugin version.
 		update_option( 'consent_raven_version', CONSENT_RAVEN_VERSION );
 

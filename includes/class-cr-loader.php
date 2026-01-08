@@ -122,6 +122,9 @@ class CR_Loader {
 			$plugin_admin,
 			'add_action_links'
 		);
+
+		// Consent log cleanup cron action.
+		add_action( 'consent_raven_log_cleanup', array( 'CR_Consent_Log', 'cleanup_old_logs' ) );
 	}
 
 	/**

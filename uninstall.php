@@ -33,3 +33,10 @@ delete_transient( 'consent_raven_cache' );
 
 // Clear any scheduled hooks.
 wp_clear_scheduled_hook( 'consent_raven_cleanup' );
+wp_clear_scheduled_hook( 'consent_raven_log_cleanup' );
+
+// Drop consent logs table.
+global $wpdb;
+$table_name = $wpdb->prefix . 'consent_raven_logs';
+// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );

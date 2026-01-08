@@ -78,6 +78,7 @@ register_deactivation_hook( __FILE__, 'consent_raven_deactivate' );
 require CONSENT_RAVEN_PLUGIN_DIR . 'includes/class-cr-loader.php';
 require CONSENT_RAVEN_PLUGIN_DIR . 'includes/class-cr-i18n.php';
 require CONSENT_RAVEN_PLUGIN_DIR . 'includes/class-cr-consent.php';
+require CONSENT_RAVEN_PLUGIN_DIR . 'includes/class-cr-consent-log.php';
 require CONSENT_RAVEN_PLUGIN_DIR . 'admin/class-cr-admin.php';
 require CONSENT_RAVEN_PLUGIN_DIR . 'admin/class-cr-settings.php';
 require CONSENT_RAVEN_PLUGIN_DIR . 'admin/class-cr-rest-api.php';
